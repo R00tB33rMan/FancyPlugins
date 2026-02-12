@@ -7,6 +7,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Bukkit;
 import org.bukkit.Color;
+import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.entity.Display;
 import org.bukkit.entity.Player;
@@ -210,7 +211,10 @@ public abstract class Hologram {
      * Refreshes the hologram for players currently viewing it in the same world as the hologram.
      */
     public void refreshForViewersInWorld() {
-        World world = data.getLocation().getWorld();
+        Location location = data.getLocationRef();
+        if (location == null) return;
+
+        World world = location.getWorld();
         final var players = getViewers()
                 .stream()
                 .map(Bukkit::getPlayer)
@@ -274,15 +278,18 @@ public abstract class Hologram {
     }
 
     public boolean isWithinVisibilityDistance(@NotNull final Player player) {
-        final var location = getData().getLocation();
-        if (!location.getWorld().equals(player.getWorld())) {
+        Location location = data.getLocationRef();
+        if (location == null || !location.getWorld().equals(player.getWorld())) {
             return false;
         }
 
         int visibilityDistance = data.getVisibilityDistance();
-        double distanceSquared = location.distanceSquared(player.getLocation());
+        Location playerLocation = player.getLocation();
+        double dx = location.getX() - playerLocation.getX();
+        double dy = location.getY() - playerLocation.getY();
+        double dz = location.getZ() - playerLocation.getZ();
 
-        return distanceSquared <= visibilityDistance * visibilityDistance;
+        return dx * dx + dy * dy + dz * dz <= (double) visibilityDistance * visibilityDistance;
     }
 
     /**

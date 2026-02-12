@@ -53,6 +53,10 @@ public class HologramData implements YamlData {
         return location.clone();
     }
 
+    public @Nullable Location getLocationRef() {
+        return location;
+    }
+
     public HologramData setLocation(@Nullable Location location) {
         this.location = location != null ? location.clone() : null;
         setHasChanges(true);
